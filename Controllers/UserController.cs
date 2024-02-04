@@ -3,8 +3,10 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using AllInOne.Models;
 using AllInOne.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
@@ -37,6 +39,7 @@ public class UserController:ControllerBase{
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
     }
+
     [HttpPost]  
     [Route("register")]
     public async Task<ActionResult<UserModel>> CreateUser([FromBody] UserModel user)
@@ -48,7 +51,7 @@ public class UserController:ControllerBase{
 
         }catch(Exception ex){
             _logger.LogError(ex.Message);
-            return StatusCode(StatusCodes.Status500InternalServerError,"Error Creating new User");
+            return StatusCode(StatusCodes.Status500InternalServerError,JsonSerializer.Serialize(new {message = "Error Creating new User"}));
         }
     }
 }

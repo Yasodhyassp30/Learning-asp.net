@@ -1,6 +1,7 @@
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using System.Text.Json;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 
@@ -16,8 +17,8 @@ public class JwtMiddleware
 
     public async Task Invoke(HttpContext context)
     {
-        if (CheckAttribute(context))
-        {
+
+        
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
             if (token != null)
             {
@@ -26,7 +27,7 @@ public class JwtMiddleware
                 if (dedcodedToken == null)
                 {
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    await context.Response.WriteAsync("Unauthorized");
+                    await context.Response.WriteAsync(JsonSerializer.Serialize(new { message = "Unauthorized" }));
                     return;
                 }
                 await _next(context);
@@ -34,13 +35,9 @@ public class JwtMiddleware
             else
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                await context.Response.WriteAsync("Unauthorized");
+                await context.Response.WriteAsync(JsonSerializer.Serialize(new { message = "Unauthorized" }));
             }
-        }
-        else
-        {
-            await _next(context);
-        }
+
 
     }
 
@@ -66,12 +63,6 @@ public class JwtMiddleware
         {
             return null;
         }
-    }
-
-    private bool CheckAttribute(HttpContext context)
-    {
-        var endpoint = context.GetEndpoint();
-        return endpoint?.Metadata.GetMetadata<Microsoft.AspNetCore.Authorization.IAuthorizeData>() != null;
     }
 }
 
