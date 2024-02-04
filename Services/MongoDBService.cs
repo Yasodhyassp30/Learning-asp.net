@@ -34,7 +34,6 @@ namespace AllInOne.Services;
 
         public async Task<UserModel> CreateUser(UserModel user)
         {
-            Console.WriteLine(user);
             await _users.InsertOneAsync(user);
             return user;
         }
