@@ -25,7 +25,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-app.UseWhen(context => context.Request.Path.StartsWithSegments("/api") && !context.Request.Path.Equals("/api/user/register"), app =>
+app.UseWhen(context => context.Request.Path.StartsWithSegments("/api") && !context.Request.Path.Equals("/api/user/register") && !context.Request.Path.Equals("/api/user/login"), app =>
 {
     app.UseMiddleware<JwtMiddleware>();
 });

@@ -6,7 +6,6 @@ using System.Text;
 using System.Text.Json;
 using AllInOne.Models;
 using AllInOne.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
@@ -45,6 +44,11 @@ public class UserController:ControllerBase{
     public async Task<ActionResult<UserModel>> CreateUser([FromBody] UserModel user)
     {
         try{
+            var userExists = await _userService.GetUserByEmail(user.Email);
+            if(userExists != null){
+                return StatusCode(StatusCodes.Status400BadRequest,JsonSerializer.Serialize(new {message = "User with this email already exists"}));
+            }
+            user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
             UserModel data =await _userService.CreateUser(user);
             data.Token = GenerateJwtToken(data);
             return data;
@@ -52,6 +56,27 @@ public class UserController:ControllerBase{
         }catch(Exception ex){
             _logger.LogError(ex.Message);
             return StatusCode(StatusCodes.Status500InternalServerError,JsonSerializer.Serialize(new {message = "Error Creating new User"}));
+        }
+    }
+    [HttpPost]
+    [Route("login")]
+    public async Task<ActionResult<UserModel>> Login([FromBody] UserLoginModel user)
+    {
+        try{
+            var userData = await _userService.GetUserByEmail(user.Email);
+            if(userData == null){
+                return StatusCode(StatusCodes.Status400BadRequest,JsonSerializer.Serialize(new {message = "User with this email does not exist"}));
+            }
+            bool isValid = BCrypt.Net.BCrypt.Verify(user.Password,userData.Password);
+            if(isValid){
+                userData.Token = GenerateJwtToken(userData);
+                return userData;
+            }else{
+                return StatusCode(StatusCodes.Status400BadRequest,JsonSerializer.Serialize(new {message = "Invalid Password"}));
+            }
+        }catch(Exception ex){
+            _logger.LogError(ex.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError,JsonSerializer.Serialize(new {message = "Error Logging in User"}));
         }
     }
 }

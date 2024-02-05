@@ -27,15 +27,22 @@ namespace AllInOne.Services;
         {
             return await _users.Find(user => true).ToListAsync();
         }
-        public async Task<UserModel> GetUser(string id)
+        public async Task<UserModel> GetUserByID(string id)
         {
             return await _users.Find<UserModel>(user => user.Id == id).FirstOrDefaultAsync();
         }
-
+        public async Task<UserModel> GetUserByEmail(string email)
+        {
+            return await _users.Find<UserModel>(user => user.Email == email).FirstOrDefaultAsync();
+        }
         public async Task<UserModel> CreateUser(UserModel user)
         {
             await _users.InsertOneAsync(user);
             return user;
         }
+
+
+
+        
     }
 
