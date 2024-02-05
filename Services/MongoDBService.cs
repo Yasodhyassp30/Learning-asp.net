@@ -1,8 +1,6 @@
 
 using MongoDB.Driver;
-using MongoDB.Bson;
 using AllInOne.Models;
-using Microsoft.Extensions.Options;
 
 namespace AllInOne.Services;
 
@@ -10,14 +8,14 @@ namespace AllInOne.Services;
     {
         private readonly IMongoCollection<UserModel> _users;
         private readonly ILogger<UserService> _logger;
-        public UserService(IOptions<MongoDBSettings> settings, ILogger<UserService> logger)
+
+        private readonly MongoDb _database;
+        public UserService(MongoDb dataabase,ILogger<UserService> logger)
         {
             _logger= logger;
             try{
-            _logger.LogInformation("Connecting to MongoDB");
-            var client = new MongoClient(settings.Value.ConnectionString);
-            var database = client.GetDatabase(settings.Value.DatabaseName);
-            _users = database.GetCollection<UserModel>(settings.Value.CollectionName);
+                _database = dataabase;
+                _users = _database.Users;
             }catch(Exception ex){
                 _logger.LogError(ex.Message);
             }
