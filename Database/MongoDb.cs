@@ -22,6 +22,7 @@ public class MongoDb{
     }
 
     public IMongoCollection<UserModel> Users => _database.GetCollection<UserModel>("Users");
+    public IMongoCollection<RemainderModel> Remainders => _database.GetCollection<RemainderModel>("Remainders");
 
 }
 

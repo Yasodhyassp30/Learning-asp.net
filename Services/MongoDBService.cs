@@ -8,14 +8,11 @@ namespace AllInOne.Services;
     {
         private readonly IMongoCollection<UserModel> _users;
         private readonly ILogger<UserService> _logger;
-
-        private readonly MongoDb _database;
-        public UserService(MongoDb dataabase,ILogger<UserService> logger)
+        public UserService(MongoDb database,ILogger<UserService> logger)
         {
             _logger= logger;
             try{
-                _database = dataabase;
-                _users = _database.Users;
+                _users = database.Users;
             }catch(Exception ex){
                 _logger.LogError(ex.Message);
             }

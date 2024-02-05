@@ -19,13 +19,16 @@ public class JwtMiddleware
     {
 
         
-            var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+            var token = context.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+           
+            
             if (token != null)
             {
-
                 var dedcodedToken = ValidateToken(context, token);
                 if (dedcodedToken == null)
                 {
+                     Console.WriteLine(token);
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                     await context.Response.WriteAsync(JsonSerializer.Serialize(new { message = "Unauthorized" }));
                     return;
@@ -41,13 +44,13 @@ public class JwtMiddleware
 
     }
 
-    private string ValidateToken(HttpContext context, string token)
+    private SecurityToken ValidateToken(HttpContext context, string token)
     {
         try
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             IConfigurationSection JwtSettings = context.RequestServices.GetRequiredService<IConfiguration>().GetSection("Jwt");
-            var key = Encoding.ASCII.GetBytes(JwtSettings["Secret"]);
+            var key = Encoding.ASCII.GetBytes(JwtSettings["SecretKey"]);
             tokenHandler.ValidateToken(token, new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
@@ -56,8 +59,8 @@ public class JwtMiddleware
                 ValidateAudience = false,
                 ClockSkew = TimeSpan.Zero
             }, out SecurityToken validatedToken);
-            var dedcodedToken = tokenHandler.ReadJwtToken(token);
-            return dedcodedToken.ToString();
+            
+            return validatedToken;
         }
         catch (Exception ex)
         {
